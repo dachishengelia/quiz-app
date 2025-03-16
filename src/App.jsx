@@ -101,7 +101,8 @@ function App() {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
-  const [quizCompleted, setQuizCompleted] = useState(false); 
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
@@ -131,14 +132,19 @@ function App() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setIsSubmitted(false);
+      setProgress(((currentQuestionIndex + 1) / questions.length) * 100);
     } else {
-      setQuizCompleted(true); 
+      setQuizCompleted(true);
     }
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-[#F4F6FA] text-gray-800'} flex flex-col items-center justify-center p-8`}>
-      <header className="w-full flex justify-end items-center p-4">
+    <div
+      className={`min-h-screen transition-colors duration-300 ${
+        isDarkMode ? 'bg-gray-800' : 'bg-[#F4F6FA]'
+      } flex flex-col items-center justify-start p-8`}
+    >
+      <header className="w-full flex justify-end items-center mb-6">
         <img
           src="/assets/sun.png"
           alt="Sun"
@@ -149,7 +155,9 @@ function App() {
           className="cursor-pointer bg-[#A729F5] relative inline-flex items-center h-8 rounded-full w-16 mx-4"
         >
           <span
-            className={`${isDarkMode ? 'translate-x-8' : 'translate-x-1'} inline-block w-6 h-6 transform bg-white rounded-full transition-transform`}
+            className={`${
+              isDarkMode ? 'translate-x-8' : 'translate-x-1'
+            } inline-block w-6 h-6 transform bg-white rounded-full transition-transform`}
           />
         </div>
         <img
@@ -161,45 +169,67 @@ function App() {
 
       {!quizCompleted ? (
         !hasStarted ? (
-          <div className="flex w-full max-w-5xl items-center justify-between mt-20">
-            <div className="text-left max-w-md">
-              <h1 className="text-5xl font-normal">Welcome to the</h1>
-              <h2 className="text-5xl font-bold">Frontend Quiz!</h2>
-              <p className="text-lg mt-4 text-gray-600 dark:text-gray-300">Pick a subject to get started.</p>
+          <div className="flex w-full max-w-5xl items-center justify-between mt-10">
+            <div className="w-1/2 text-left">
+              <h1 className={`text-5xl font-normal ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                Welcome to the
+              </h1>
+              <h2 className={`text-5xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                Frontend Quiz!
+              </h2>
+              <p className={`text-lg mt-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                Pick a subject to get started.
+              </p>
             </div>
-            <div className="space-y-4">
+            <div className="w-1/2 space-y-4 flex flex-col items-start mt-10">
               {["HTML", "CSS", "Javascript", "Accessibility"].map((subject) => (
                 <button
                   key={subject}
                   onClick={handleStartQuiz}
-                  className="flex items-center w-80 px-6 py-4 bg-white text-gray-800 dark:bg-gray-700 dark:text-white rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className={`flex items-center w-120 px-6 py-4 rounded-lg shadow-md ${
+                    isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white text-gray-800 hover:bg-gray-100'
+                  }`}
                 >
-                  <span className="mr-4 text-xl">📜</span>
                   {subject}
                 </button>
               ))}
             </div>
           </div>
         ) : (
-          <div className="flex w-full max-w-5xl items-center justify-between mt-20">
-            <div className="w-1/2 text-left">
-              <h2 className="text-2xl font-bold mb-4">{questions[currentQuestionIndex].question}</h2>
+          <div className="flex w-full max-w-5xl items-center justify-between mt-10">
+            <div className="w-1/2 text-left ml-8"> 
+              <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                {questions[currentQuestionIndex].question}
+              </h2>
+              <div className="w-full bg-gray-300 rounded-full h-2 mt-4" style={{ width: '90%' }}>
+                <div
+                  className="bg-purple-600 h-2 rounded-full"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
             </div>
 
             <div className="w-1/2 space-y-4">
-              <ul className="list-disc pl-5">
+              <ul className="list-none pl-0 space-y-4">
                 {questions[currentQuestionIndex].options.map((option, index) => (
                   <li
                     key={index}
                     onClick={() => handleSelectAnswer(option)}
                     className={`w-full text-left px-6 py-4 rounded-lg border-2 transition-all cursor-pointer ${
-                      isSubmitted ? (
-                        option.correct ? 'border-green-500 bg-green-100' :
-                        (selectedAnswer === option ? 'border-red-500 bg-red-100' : 'border-gray-300')
-                      ) : (
-                        selectedAnswer === option ? 'border-blue-500 bg-blue-100' : 'border-gray-300'
-                      )
-                    }`}
+                      isSubmitted
+                        ? option.correct
+                          ? 'border-green-500' 
+                          : selectedAnswer === option
+                          ? 'border-red-500'  
+                          : isDarkMode ? 'border-gray-700' : 'border-white'
+                        : selectedAnswer === option
+                        ? 'border-blue-500'  
+                        : isDarkMode
+                        ? 'border-gray-700' 
+                        : 'border-white'
+                    } ${isDarkMode ? 'bg-gray-700' : 'bg-white'} ${
+                      selectedAnswer === option && !isSubmitted ? 'bg-blue-100' : ''
+                    } ${isDarkMode ? 'text-white' : 'text-gray-800'}`}
                   >
                     {String.fromCharCode(65 + index)}. {option.text}
                   </li>
@@ -228,7 +258,7 @@ function App() {
               )}
 
               {currentQuestionIndex === questions.length - 1 && isSubmitted && (
-                <div className="mt-6 text-lg">
+                <div className={`mt-6 text-lg ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                   You got {score} out of {questions.length} correct!
                 </div>
               )}
@@ -236,11 +266,12 @@ function App() {
           </div>
         )
       ) : (
-        <div className="mt-6 text-lg">You got {score} out of {questions.length} correct!</div>
+        <div className={`mt-6 text-lg ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+          You got {score} out of {questions.length} correct!
+        </div>
       )}
     </div>
   );
-  
 }
 
 export default App;
